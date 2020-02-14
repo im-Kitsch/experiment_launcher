@@ -89,7 +89,7 @@ COMMAND_LINE=${@:2}
         full_path = self.save_slurm(code)
 
         if not test:
-            results_base_dir = os.path.join('work', 'scratch', os.getenv('USER'), self._exp_name)
+            results_base_dir = os.path.join('/work', 'scratch', os.getenv('USER'), self._exp_name)
             os.makedirs(results_base_dir, exist_ok=True)
 
         for exp in self._experiment_list:

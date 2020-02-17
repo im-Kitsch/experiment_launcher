@@ -12,6 +12,4 @@ and to False for SLURM run.
 
 You can do a minimal installation of ``experiment_launcher`` with:
 
-.. code:: shell
-
     pip3 install  -e .

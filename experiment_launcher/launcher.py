@@ -148,7 +148,14 @@ COMMAND_LINE=${@:2}
     def _convert_to_command_line(exp):
         command_line = ''
         for key, value in exp.items():
-            command_line += '--' + key.replace('_', '-') + ' ' + str(value) + ' '
+            new_command = '--' + key.replace('_', '-') + ' '
+
+            if isinstance(value, bool):
+                new_command = new_command if value else ''
+            else:
+                new_command += str(value) + ' '
+
+            command_line += new_command
 
         return command_line
 

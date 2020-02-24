@@ -18,11 +18,13 @@ if __name__ == '__main__':
 
     a_list = [1, 2, 3]
     b_c_list = [11, 12]
+    boolean_list = [True, False]
 
     launcher.add_default_params(default='b')
 
-    for a, b_c in product(a_list, b_c_list):
+    for a, b_c, boolean in product(a_list, b_c_list, boolean_list):
         launcher.add_experiment(a=a,
-                                b_c=b_c)
+                                b_c=b_c,
+                                boolean=boolean)
 
     launcher.run(local, test)

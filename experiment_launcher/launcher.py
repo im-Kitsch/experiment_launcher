@@ -65,7 +65,9 @@ class Launcher(object):
 echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
 
 # Program specific arguments
-RESULTS_DIR="/work/scratch/"$USER"/$1"
+"""
+        code += "\"RESULTS_DIR=\"" + self._io_log_dir + "$USER\"/$1\""
+        code += """\
 COMMAND_LINE=${@:2}
 """
         code += 'python3 ' + self._python_file + '.py \\\n'

@@ -57,8 +57,8 @@ class Launcher(object):
 #SBATCH -c 1
 """
         code += '#SBATCH --mem-per-cpu=' + str(self._memory) + '\n'
-        code += '#SBATCH -o' + self._io_log_dir + '/%u/' + self._exp_name + '/%A_%a-out.txt\n'
-        code += '#SBATCH -e' + self._io_log_dir + '/%u/' + self._exp_name + '/%A_%a-err.txt\n'
+        code += '#SBATCH -o ' + self._io_log_dir + '/%u/' + self._exp_name + '/%A_%a-out.txt\n'
+        code += '#SBATCH -e ' + self._io_log_dir + '/%u/' + self._exp_name + '/%A_%a-err.txt\n'
         code += """\
 ###############################################################################
 # Your PROGRAM call starts here

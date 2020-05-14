@@ -66,7 +66,7 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
 
 # Program specific arguments
 """
-        code += "\"RESULTS_DIR=\"" + self._io_log_dir + "$USER\"/$1\""
+        code += "\"RESULTS_DIR=\"" + self._io_log_dir + "\\$USER\"/$1\"\n"
         code += """\
 COMMAND_LINE=${@:2}
 """

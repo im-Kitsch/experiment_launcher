@@ -7,7 +7,8 @@ from itertools import product
 
 class Launcher(object):
     def __init__(self, exp_name, python_file, n_exp, memory=2000, hours=24, minutes=0, seconds=0,
-                 project_name=None, base_dir='./exp', n_jobs=-1, use_timestamp=False):
+                 project_name=None, base_dir='./exp', io_log_dir='/work/scratch',
+                 n_jobs=-1, use_timestamp=False):
         self._exp_name = exp_name
         self._python_file = python_file
         self._n_exp = n_exp
@@ -19,6 +20,8 @@ class Launcher(object):
 
         self._experiment_list = list()
         self._default_params = dict()
+
+        self._io_log_dir = io_log_dir
 
         if use_timestamp:
             self._exp_name += datetime.datetime.now().strftime('_%Y-%m-%d_%H-%M-%S')
@@ -52,11 +55,10 @@ class Launcher(object):
         code += """\
 #SBATCH -n 1
 #SBATCH -c 1
-#SBATCH -C avx
 """
         code += '#SBATCH --mem-per-cpu=' + str(self._memory) + '\n'
-        code += '#SBATCH -o /work/scratch/%u/' + self._exp_name + '/%A_%a-out.txt\n'
-        code += '#SBATCH -e /work/scratch/%u/' + self._exp_name + '/%A_%a-err.txt\n'
+        code += '#SBATCH -o' + self._io_log_dir + '/%u/' + self._exp_name + '/%A_%a-out.txt\n'
+        code += '#SBATCH -e' + self._io_log_dir + '/%u/' + self._exp_name + '/%A_%a-err.txt\n'
         code += """\
 ###############################################################################
 # Your PROGRAM call starts here
@@ -89,7 +91,7 @@ COMMAND_LINE=${@:2}
         full_path = self.save_slurm(code)
 
         if not test:
-            results_base_dir = os.path.join('/work', 'scratch', os.getenv('USER'), self._exp_name)
+            results_base_dir = os.path.join(self._io_log_dir, os.getenv('USER'), self._exp_name)
             os.makedirs(results_base_dir, exist_ok=True)
 
         for exp in self._experiment_list:

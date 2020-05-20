@@ -2,8 +2,8 @@ from itertools import product
 from experiment_launcher import Launcher
 
 if __name__ == '__main__':
-    local = True
-    test = False
+    local = False
+    test = True
 
     launcher = Launcher(exp_name='test_launcher',
                         python_file='test',

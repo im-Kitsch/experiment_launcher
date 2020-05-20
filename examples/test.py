@@ -2,7 +2,7 @@ import os
 import argparse
 
 
-def experiment(a, b_c, boolean, seed, results_dir,  default='a'):
+def experiment(a, b_c, boolean, seed, results_dir,  default):
 
     filename = os.path.join(results_dir, 'log_' + str(seed) + '.txt')
     os.makedirs(results_dir, exist_ok=True)
@@ -20,7 +20,18 @@ def experiment(a, b_c, boolean, seed, results_dir,  default='a'):
         file.write('a: ' + str(a) + '\n')
         file.write('b-c: ' + str(b_c) + '\n')
         file.write('boolean: ' + str(boolean) + '\n')
-        file.write('default: ' + default + '\n')
+        file.write('other: ' + default + '\n')
+
+
+def default_params():
+    defaults = dict(
+        a=1,
+        b_c=2,
+        boolean=False,
+        default='a'
+    )
+
+    return defaults
 
 
 def parse_args():
@@ -30,14 +41,14 @@ def parse_args():
     arg_test.add_argument("--a", type=int)
     arg_test.add_argument("--b-c", type=int)
     arg_test.add_argument("--boolean", action='store_true')
-    arg_test.add_argument('--default', type=str, default='a')
+    arg_test.add_argument('--default', type=str)
 
     arg_default = parser.add_argument_group('Default')
     arg_default.add_argument('--seed', type=int)
-    arg_default.add_argument('--results-dir', type=str, default='')
+    arg_default.add_argument('--results-dir', type=str)
 
+    parser.set_defaults(**default_params())
     args = parser.parse_args()
-
     return vars(args)
 
 

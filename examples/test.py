@@ -20,7 +20,7 @@ def experiment(a, b_c, boolean, seed, results_dir,  default):
         file.write('a: ' + str(a) + '\n')
         file.write('b-c: ' + str(b_c) + '\n')
         file.write('boolean: ' + str(boolean) + '\n')
-        file.write('other: ' + default + '\n')
+        file.write('default: ' + default + '\n')
 
 
 def default_params():

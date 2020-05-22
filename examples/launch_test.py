@@ -12,7 +12,6 @@ if __name__ == '__main__':
                         hours=24,
                         minutes=0,
                         seconds=0,
-                        base_dir='./logs',
                         n_jobs=1,
                         use_timestamp=True)
 

@@ -19,11 +19,13 @@ class Launcher(object):
         self._experiment_list = list()
         self._default_params = dict()
 
-        if base_dir is None:
-            self._exp_dir_local = os.path.join('.', 'logs', self._exp_name)
-            self._exp_dir_slurm = os.path.join('/work', 'scratch', os.getenv('USER'), self._exp_name)
+        base_dir = './logs' if base_dir is None else base_dir
+        self._exp_dir_local = os.path.join(base_dir, self._exp_name)
+
+        scratch_dir = os.path.join('/work', 'scratch', os.getenv('USER'))
+        if os.path.isdir(scratch_dir):
+            self._exp_dir_slurm = os.path.join(scratch_dir, self._exp_name)
         else:
-            self._exp_dir_local = os.path.join(base_dir, self._exp_name)
             self._exp_dir_slurm = self._exp_dir_local
 
         if use_timestamp:

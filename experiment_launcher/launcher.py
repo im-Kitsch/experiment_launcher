@@ -124,7 +124,7 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
             for exp, i in product(self._experiment_list, range(self._n_exp)):
                 results_dir = self._generate_results_dir(self._exp_dir_local, exp)
                 params = str(exp).replace('{', '(').replace('}', '').replace(': ', '=').replace('\'', '')
-                print('experiment' + params + default_params + ', seed=' + str(i) + ', results_dir=' + results_dir + ')')
+                print('experiment' + params + default_params + 'seed=' + str(i) + ', results_dir=' + results_dir + ')')
         else:
             if hasattr(module, 'default_params'):
                 params_dict = module.default_params()

@@ -19,6 +19,9 @@ class Launcher(object):
         self._experiment_list = list()
         self._default_params = dict()
 
+        if use_timestamp:
+            self._exp_name += datetime.datetime.now().strftime('_%Y-%m-%d_%H-%M-%S')
+
         base_dir = './logs' if base_dir is None else base_dir
         self._exp_dir_local = os.path.join(base_dir, self._exp_name)
 
@@ -27,9 +30,6 @@ class Launcher(object):
             self._exp_dir_slurm = os.path.join(scratch_dir, self._exp_name)
         else:
             self._exp_dir_slurm = self._exp_dir_local
-
-        if use_timestamp:
-            self._exp_name += datetime.datetime.now().strftime('_%Y-%m-%d_%H-%M-%S')
 
     def add_experiment(self, **kwargs):
         self._experiment_list.append(kwargs)

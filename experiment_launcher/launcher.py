@@ -79,13 +79,13 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
 # Program specific arguments
 """
         code += 'python3 ' + self._python_file + '.py \\\n'
-        code += "\t\t${@:2} \\"
+        code += "\t\t${@:2}\\\n"
 
         if self._n_exp > 1:
-            code += "\t\t--seed $SLURM_ARRAY_TASK_ID \\"
+            code += "\t\t--seed $SLURM_ARRAY_TASK_ID\\\n"
         else:
-            code += "\t\t--seed 0 \\"
-        code += "\t\t--results-dir $1"
+            code += "\t\t--seed 0\\\n"
+        code += "\t\t--results-dir $1\n"
 
         return code
 

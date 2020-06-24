@@ -13,7 +13,8 @@ if __name__ == '__main__':
                         minutes=0,
                         seconds=0,
                         n_jobs=1,
-                        use_timestamp=True)
+                        use_timestamp=True,
+                        flat_dirs=False)
 
     a_list = [1, 2, 3]
     b_c_list = [11, 12]

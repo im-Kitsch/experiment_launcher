@@ -7,7 +7,7 @@ from itertools import product
 
 class Launcher(object):
     def __init__(self, exp_name, python_file, n_exp, memory=2000, hours=24, minutes=0, seconds=0,
-                 project_name=None, base_dir=None, n_jobs=-1, use_timestamp=False):
+                 project_name=None, base_dir=None, n_jobs=-1, use_timestamp=False, flat_dirs=False):
         self._exp_name = exp_name
         self._python_file = python_file
         self._n_exp = n_exp
@@ -21,6 +21,8 @@ class Launcher(object):
 
         if use_timestamp:
             self._exp_name += datetime.datetime.now().strftime('_%Y-%m-%d_%H-%M-%S')
+
+        self._flat_dirs = flat_dirs
 
         base_dir = './logs' if base_dir is None else base_dir
         self._exp_dir_local = os.path.join(base_dir, self._exp_name)
@@ -55,15 +57,20 @@ class Launcher(object):
         if self._project_name:
             code += '#SBATCH -A ' + self._project_name + '\n'
         code += '#SBATCH -J  ' + self._exp_name + '\n'
-        code += '#SBATCH -a 0-' + str(self._n_exp) + '\n'
+        if self._n_exp > 1:
+            code += '#SBATCH -a 0-' + str(self._n_exp) + '\n'
         code += '#SBATCH -t ' + self._duration + '\n'
         code += """\
 #SBATCH -n 1
 #SBATCH -c 1
 """
         code += '#SBATCH --mem-per-cpu=' + str(self._memory) + '\n'
-        code += '#SBATCH -o ' + self._exp_dir_slurm + '/%A_%a-out.txt\n'
-        code += '#SBATCH -e ' + self._exp_dir_slurm + '/%A_%a-err.txt\n'
+        if self._n_exp > 1:
+            code += '#SBATCH -o ' + self._exp_dir_slurm + '/%A_%a.out\n'
+            code += '#SBATCH -e ' + self._exp_dir_slurm + '/%A_%a.err\n'
+        else:
+            code += '#SBATCH -o ' + self._exp_dir_slurm + '/%A.out\n'
+            code += '#SBATCH -e ' + self._exp_dir_slurm + '/%A.err\n'
         code += """\
 ###############################################################################
 # Your PROGRAM call starts here
@@ -72,11 +79,14 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
 # Program specific arguments
 """
         code += 'python3 ' + self._python_file + '.py \\\n'
-        code += """\
-\t\t${@:2} \\
-\t\t--seed $SLURM_ARRAY_TASK_ID \\
-\t\t--results-dir $1
-"""
+        code += "\t\t${@:2} \\"
+
+        if self._n_exp > 1:
+            code += "\t\t--seed $SLURM_ARRAY_TASK_ID \\"
+        else:
+            code += "\t\t--seed 0 \\"
+        code += "\t\t--results-dir $1"
+
         return code
 
     def save_slurm(self):
@@ -134,13 +144,23 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
             Parallel(n_jobs=self._n_jobs)(delayed(experiment)(**params)
                                           for params in self._generate_exp_params(params_dict))
 
-    @staticmethod
-    def _generate_results_dir(results_dir, exp):
+    def _generate_results_dir(self, results_dir, exp):
+        subfolder = None
         for key, value in exp.items():
-            subfolder = key + '_' + str(value)
-            results_dir = os.path.join(results_dir, subfolder)
+            key_value = key + '_' + str(value)
 
-        return results_dir
+            if self._flat_dirs and subfolder is not None:
+                subfolder += '_' + key_value
+            else:
+                subfolder = key_value
+
+            if not self._flat_dirs:
+                results_dir = os.path.join(results_dir, subfolder)
+
+        if self._flat_dirs:
+            return os.path.join(results_dir, subfolder)
+        else:
+            return results_dir
 
     def _generate_exp_params(self, params_dict):
         params_dict.update(self._default_params)

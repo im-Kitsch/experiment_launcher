@@ -6,12 +6,17 @@ from itertools import product
 
 
 class Launcher(object):
-    def __init__(self, exp_name, python_file, n_exp, memory=2000, hours=24, minutes=0, seconds=0,
-                 project_name=None, base_dir=None, n_jobs=-1, use_timestamp=False, flat_dirs=False):
+    def __init__(self, exp_name, python_file, n_exp,
+                 memory=2000, cpus_per_task=1, n_tasks=1,
+                 hours=24, minutes=0, seconds=0,
+                 project_name=None, base_dir=None,
+                 n_jobs=-1, use_timestamp=False, flat_dirs=False):
         self._exp_name = exp_name
         self._python_file = python_file
         self._n_exp = n_exp
         self._memory = memory
+        self._cpus_per_task = cpus_per_task
+        self._n_tasks = n_tasks
         self._duration = Launcher._to_duration(hours, minutes, seconds)
         self._project_name = project_name
         self._n_jobs = n_jobs
@@ -60,10 +65,8 @@ class Launcher(object):
         if self._n_exp > 1:
             code += '#SBATCH -a 0-' + str(self._n_exp) + '\n'
         code += '#SBATCH -t ' + self._duration + '\n'
-        code += """\
-#SBATCH -n 1
-#SBATCH -c 1
-"""
+        code += '#SBATCH -n ' + str(self._n_tasks) + '\n'
+        code += '#SBATCH -c ' + str(self._cpus_per_task) + '\n'
         code += '#SBATCH --mem-per-cpu=' + str(self._memory) + '\n'
         if self._n_exp > 1:
             code += '#SBATCH -o ' + self._exp_dir_slurm + '/%A_%a.out\n'

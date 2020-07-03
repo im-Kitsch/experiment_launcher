@@ -63,7 +63,7 @@ class Launcher(object):
             code += '#SBATCH -A ' + self._project_name + '\n'
         code += '#SBATCH -J  ' + self._exp_name + '\n'
         if self._n_exp > 1:
-            code += '#SBATCH -a 0-' + str(self._n_exp) + '\n'
+            code += '#SBATCH -a 0-' + str(self._n_exp-1) + '\n'
         code += '#SBATCH -t ' + self._duration + '\n'
         code += '#SBATCH -n ' + str(self._n_tasks) + '\n'
         code += '#SBATCH -c ' + str(self._cpus_per_task) + '\n'

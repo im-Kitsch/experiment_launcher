@@ -1,4 +1,5 @@
 import os
+
 from joblib import Parallel, delayed
 import datetime
 from importlib import import_module
@@ -6,28 +7,23 @@ from itertools import product
 
 
 class Launcher(object):
-    def __init__(self, exp_name, python_file, n_exp,
-                 memory=2000, cpus_per_task=1, n_tasks=1,
-                 hours=24, minutes=0, seconds=0,
-                 project_name=None, base_dir=None,
-                 n_jobs=-1, use_timestamp=False, flat_dirs=False):
+    def __init__(self, exp_name, python_file, n_exp, n_cores=1, memory=2000, days=0, hours=24, minutes=0, seconds=0,
+                 project_name=None, base_dir=None, n_jobs=-1, conda_env=None, gres=None, begin=None,
+                 use_timestamp=False):
         self._exp_name = exp_name
         self._python_file = python_file
         self._n_exp = n_exp
+        self._n_cores = n_cores
         self._memory = memory
-        self._cpus_per_task = cpus_per_task
-        self._n_tasks = n_tasks
-        self._duration = Launcher._to_duration(hours, minutes, seconds)
+        self._duration = Launcher._to_duration(days, hours, minutes, seconds)
         self._project_name = project_name
         self._n_jobs = n_jobs
+        self._conda_env = conda_env
+        self._gres = gres
+        self._begin = begin
 
         self._experiment_list = list()
         self._default_params = dict()
-
-        if use_timestamp:
-            self._exp_name += datetime.datetime.now().strftime('_%Y-%m-%d_%H-%M-%S')
-
-        self._flat_dirs = flat_dirs
 
         base_dir = './logs' if base_dir is None else base_dir
         self._exp_dir_local = os.path.join(base_dir, self._exp_name)
@@ -37,6 +33,9 @@ class Launcher(object):
             self._exp_dir_slurm = os.path.join(scratch_dir, self._exp_name)
         else:
             self._exp_dir_slurm = self._exp_dir_local
+
+        if use_timestamp:
+            self._exp_name += datetime.datetime.now().strftime('_%Y-%m-%d_%H-%M-%S')
 
     def add_experiment(self, **kwargs):
         self._experiment_list.append(kwargs)
@@ -61,19 +60,21 @@ class Launcher(object):
 """
         if self._project_name:
             code += '#SBATCH -A ' + self._project_name + '\n'
-        code += '#SBATCH -J  ' + self._exp_name + '\n'
-        if self._n_exp > 1:
-            code += '#SBATCH -a 0-' + str(self._n_exp-1) + '\n'
+        code += '#SBATCH -J ' + self._exp_name + '\n'
+        code += '#SBATCH -a 0-' + str(self._n_exp - 1) + '\n'
         code += '#SBATCH -t ' + self._duration + '\n'
-        code += '#SBATCH -n ' + str(self._n_tasks) + '\n'
-        code += '#SBATCH -c ' + str(self._cpus_per_task) + '\n'
+        if self._begin:
+            code += '#SBATCH --begin=' + self._begin + '\n'
+        code += """\
+#SBATCH -n 1
+"""
+        code += '#SBATCH -c ' + str(self._n_cores) + '\n'
         code += '#SBATCH --mem-per-cpu=' + str(self._memory) + '\n'
-        if self._n_exp > 1:
-            code += '#SBATCH -o ' + self._exp_dir_slurm + '/%A_%a.out\n'
-            code += '#SBATCH -e ' + self._exp_dir_slurm + '/%A_%a.err\n'
-        else:
-            code += '#SBATCH -o ' + self._exp_dir_slurm + '/%A.out\n'
-            code += '#SBATCH -e ' + self._exp_dir_slurm + '/%A.err\n'
+        if self._gres:
+            print(self._gres)
+            code += '#SBATCH --gres=' + str(self._gres) + '\n'
+        code += '#SBATCH -o ' + self._exp_dir_slurm + '/%A_%a-out.txt\n'
+        code += '#SBATCH -e ' + self._exp_dir_slurm + '/%A_%a-err.txt\n'
         code += """\
 ###############################################################################
 # Your PROGRAM call starts here
@@ -81,15 +82,17 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
 
 # Program specific arguments
 """
-        code += 'python3 ' + self._python_file + '.py \\\n'
-        code += "\t\t${@:2}\\\n"
-
-        if self._n_exp > 1:
-            code += "\t\t--seed $SLURM_ARRAY_TASK_ID\\\n"
+        if self._conda_env:
+            code += 'eval \"$(/home/{}/miniconda3/bin/conda shell.bash hook)\"\n'.format(os.getenv('USER'))
+            code += 'conda activate {}\n\n'.format(self._conda_env)
+            code += 'python ' + self._python_file + '.py \\\n'
         else:
-            code += "\t\t--seed 0\\\n"
-        code += "\t\t--results-dir $1\n"
-
+            code += 'python3 ' + self._python_file + '.py \\\n'
+        code += """\
+\t\t${@:2} \\
+\t\t--seed $SLURM_ARRAY_TASK_ID \\
+\t\t--results-dir $1
+"""
         return code
 
     def save_slurm(self):
@@ -147,23 +150,13 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
             Parallel(n_jobs=self._n_jobs)(delayed(experiment)(**params)
                                           for params in self._generate_exp_params(params_dict))
 
-    def _generate_results_dir(self, results_dir, exp):
-        subfolder = None
+    @staticmethod
+    def _generate_results_dir(results_dir, exp):
         for key, value in exp.items():
-            key_value = key + '_' + str(value)
+            subfolder = key + '_' + str(value)
+            results_dir = os.path.join(results_dir, subfolder)
 
-            if self._flat_dirs and subfolder is not None:
-                subfolder += '_' + key_value
-            else:
-                subfolder = key_value
-
-            if not self._flat_dirs:
-                results_dir = os.path.join(results_dir, subfolder)
-
-        if self._flat_dirs:
-            return os.path.join(results_dir, subfolder)
-        else:
-            return results_dir
+        return results_dir
 
     def _generate_exp_params(self, params_dict):
         params_dict.update(self._default_params)
@@ -191,12 +184,12 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
         return command_line
 
     @staticmethod
-    def _to_duration(hours, minutes, seconds):
+    def _to_duration(days, hours, minutes, seconds):
         h = "0" + str(hours) if hours < 10 else str(hours)
         m = "0" + str(minutes) if minutes < 10 else str(minutes)
         s = "0" + str(seconds) if seconds < 10 else str(seconds)
 
-        return h + ":" + m + ":" + s
+        return str(days) + '-' + h + ":" + m + ":" + s
 
 
 

@@ -4,17 +4,21 @@ from experiment_launcher import Launcher
 if __name__ == '__main__':
     local = True
     test = False
+    use_cuda = True
 
     launcher = Launcher(exp_name='test_launcher',
                         python_file='test',
+                        project_name='project01234',
                         n_exp=2,
                         memory=2000,
-                        hours=24,
-                        minutes=0,
+                        days=1,
+                        hours=23,
+                        minutes=59,
                         seconds=0,
                         n_jobs=1,
-                        use_timestamp=True,
-                        flat_dirs=False)
+                        conda_env='conda-env',
+                        gres='gpu:rtx2080:1' if use_cuda else None,
+                        use_timestamp=True)
 
     a_list = [1, 2, 3]
     b_c_list = [11, 12]

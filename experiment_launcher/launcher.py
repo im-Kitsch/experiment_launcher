@@ -1,5 +1,4 @@
 import os
-
 from joblib import Parallel, delayed
 import datetime
 from importlib import import_module
@@ -7,9 +6,37 @@ from itertools import product
 
 
 class Launcher(object):
+    """
+    Creates and starts jobs with Joblib or SLURM.
+
+    """
+
     def __init__(self, exp_name, python_file, n_exp, n_cores=1, memory=2000, days=0, hours=24, minutes=0, seconds=0,
                  project_name=None, base_dir=None, n_jobs=-1, conda_env=None, gres=None, begin=None,
                  use_timestamp=False):
+        """
+        Constructor.
+
+        Args:
+            exp_name (str): name of the experiment
+            python_file (str): prefix of the python file that runs a single experiment
+            n_exp (int): number of experiments
+            n_cores (int): number of cpu cores
+            memory (int): maximum memory (slurm will kill the job if this is reached)
+            days (int): number of days the experiment can last (in slurm)
+            hours (int): number of hours the experiment can last (in slurm)
+            minutes (int): number of minutes the experiment can last (in slurm)
+            seconds (int): number of seconds the experiment can last (in slurm)
+            project_name (str): name of the project for slurm. This is important if you have
+                different projects (e.g. in the hhlr cluster)
+            base_dir (str): path to directory to save the results (in hhlr results are saved to /work/scratch/$USER)
+            n_jobs (int): number of parallel jobs in Joblib
+            conda_env (str): name of the conda environment to run the experiments in
+            gres (str): request cluster resources. E.g. to add a GPU in the IAS cluster specify gres='gpu:rtx2080:1'
+            begin (str): start the slurm experiment at a given time (see --begin in slurm docs)
+            use_timestamp (bool): add a timestamp to the experiment name
+
+        """
         self._exp_name = exp_name
         self._python_file = python_file
         self._n_exp = n_exp

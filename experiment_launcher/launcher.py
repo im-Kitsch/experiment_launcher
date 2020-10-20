@@ -110,7 +110,12 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
 # Program specific arguments
 """
         if self._conda_env:
-            code += 'eval \"$(/home/{}/miniconda3/bin/conda shell.bash hook)\"\n'.format(os.getenv('USER'))
+            if os.path.exists('/home/{}/miniconda3'.format(os.getenv('USER'))):
+                code += 'eval \"$(/home/{}/miniconda3/bin/conda shell.bash hook)\"\n'.format(os.getenv('USER'))
+            elif os.path.exists('/home/{}/anaconda3'.format(os.getenv('USER'))):
+                code += 'eval \"$(/home/{}/anaconda/bin/conda shell.bash hook)\"\n'.format(os.getenv('USER'))
+            else:
+                raise Exception('You do not have a /home/USER/miniconda3 or /home/USER/anaconda3 directories')
             code += 'conda activate {}\n\n'.format(self._conda_env)
             code += 'python ' + self._python_file + '.py \\\n'
         else:

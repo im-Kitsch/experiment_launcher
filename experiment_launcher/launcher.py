@@ -11,7 +11,8 @@ class Launcher(object):
 
     """
 
-    def __init__(self, exp_name, python_file, n_exp, n_cores=1, memory=2000, days=0, hours=24, minutes=0, seconds=0,
+    def __init__(self, exp_name, python_file, n_exp, n_cores=1, memory=0, memory_per_cpu=0,
+                 days=0, hours=24, minutes=0, seconds=0,
                  project_name=None, base_dir=None, n_jobs=-1, conda_env=None, gres=None, begin=None,
                  use_timestamp=False):
         """
@@ -23,6 +24,7 @@ class Launcher(object):
             n_exp (int): number of experiments
             n_cores (int): number of cpu cores
             memory (int): maximum memory (slurm will kill the job if this is reached)
+            memory_per_cpu (int): maximum memory per core (slurm will kill the job if this is reached)
             days (int): number of days the experiment can last (in slurm)
             hours (int): number of hours the experiment can last (in slurm)
             minutes (int): number of minutes the experiment can last (in slurm)
@@ -41,7 +43,9 @@ class Launcher(object):
         self._python_file = python_file
         self._n_exp = n_exp
         self._n_cores = n_cores
+        self._memory_default = 1000
         self._memory = memory
+        self._memory_per_cpu = memory_per_cpu
         self._duration = Launcher._to_duration(days, hours, minutes, seconds)
         self._project_name = project_name
         self._n_jobs = n_jobs
@@ -96,7 +100,12 @@ class Launcher(object):
 #SBATCH -n 1
 """
         code += '#SBATCH -c ' + str(self._n_cores) + '\n'
-        code += '#SBATCH --mem-per-cpu=' + str(self._memory) + '\n'
+        if self._memory:
+            code += '#SBATCH --mem=' + str(self._memory) + '\n'
+        elif self._memory_per_cpu:
+            code += '#SBATCH --mem-per-cpu=' + str(self._memory_per_cpu) + '\n'
+        else:
+            code += '#SBATCH --mem=' + str(self._memory_default) + '\n'
         if self._gres:
             print(self._gres)
             code += '#SBATCH --gres=' + str(self._gres) + '\n'

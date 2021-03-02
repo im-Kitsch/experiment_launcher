@@ -2,15 +2,15 @@ from itertools import product
 from experiment_launcher import Launcher
 
 if __name__ == '__main__':
-    local = True
-    test = False
+    local = False
+    test = True
     use_cuda = True
 
     launcher = Launcher(exp_name='test_launcher',
                         python_file='test',
                         project_name='project01234',
                         n_exp=2,
-                        memory=2000,
+                        memory=0,
                         days=1,
                         hours=23,
                         minutes=59,

@@ -13,7 +13,7 @@ class Launcher(object):
 
     def __init__(self, exp_name, python_file, n_exp, n_cores=1, memory=2000, days=0, hours=24, minutes=0, seconds=0,
                  project_name=None, base_dir=None, n_jobs=-1, conda_env=None, gres=None, begin=None,
-                 use_timestamp=False, use_underscore=False):
+                 use_timestamp=False, use_underscore_argparse=False):
         """
         Constructor.
 
@@ -35,7 +35,7 @@ class Launcher(object):
             gres (str): request cluster resources. E.g. to add a GPU in the IAS cluster specify gres='gpu:rtx2080:1'
             begin (str): start the slurm experiment at a given time (see --begin in slurm docs)
             use_timestamp (bool): add a timestamp to the experiment name
-            use_underscore (bool): whether to use underscore '_' in argparse instead of dash '-'
+            use_underscore_argparse (bool): whether to use underscore '_' in argparse instead of dash '-'
 
         """
         self._exp_name = exp_name
@@ -65,7 +65,7 @@ class Launcher(object):
         if use_timestamp:
             self._exp_name += datetime.datetime.now().strftime('_%Y-%m-%d_%H-%M-%S')
 
-        self._use_underscore = use_underscore
+        self._use_underscore_argparse = use_underscore_argparse
 
     def add_experiment(self, **kwargs):
         self._experiment_list.append(kwargs)
@@ -127,7 +127,7 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
 \t\t${@:2} \\
 \t\t--seed $SLURM_ARRAY_TASK_ID \\
 """
-        if self._use_underscore:
+        if self._use_underscore_argparse:
             code += '\t\t--results_dir\\\n'
         else:
             code += '\t\t--results_dir\\\n'
@@ -211,7 +211,7 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
     def _convert_to_command_line(exp):
         command_line = ''
         for key, value in exp.items():
-            if self._use_underscore:
+            if self._use_underscore_argparse:
                 new_command = '--' + key + ' '
             else:
                 new_command = '--' + key.replace('_', '-') + ' '

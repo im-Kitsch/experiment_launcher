@@ -150,10 +150,10 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
         full_path = self.save_slurm()
 
         for exp in self._experiment_list:
-            command_line_arguments = self._convert_to_command_line(exp)
+            command_line_arguments = self._convert_to_command_line(exp, self._use_underscore_argparse)
             if self._default_params:
                 command_line_arguments += ' '
-                command_line_arguments += self._convert_to_command_line(self._default_params)
+                command_line_arguments += self._convert_to_command_line(self._default_params, self._use_underscore_argparse)
             results_dir = self._generate_results_dir(self._exp_dir_slurm, exp)
             command = "sbatch " + full_path + ' ' + results_dir + ' ' + command_line_arguments
 
@@ -208,10 +208,10 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
             yield params_dict
 
     @staticmethod
-    def _convert_to_command_line(exp):
+    def _convert_to_command_line(exp, use_underscore_argparse):
         command_line = ''
         for key, value in exp.items():
-            if self._use_underscore_argparse:
+            if use_underscore_argparse:
                 new_command = '--' + key + ' '
             else:
                 new_command = '--' + key.replace('_', '-') + ' '

@@ -128,9 +128,9 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
 \t\t--seed $SLURM_ARRAY_TASK_ID \\
 """
         if self._use_underscore_argparse:
-            code += '\t\t--results_dir\\\n'
+            code += '\t\t--results_dir $1\\\n'
         else:
-            code += '\t\t--results_dir\\\n'
+            code += '\t\t--results_dir $1\\\n'
 
         return code
 

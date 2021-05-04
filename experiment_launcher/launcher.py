@@ -11,10 +11,9 @@ class Launcher(object):
 
     """
 
-    def __init__(self, exp_name, python_file, n_exp, n_cores=1, memory=0, memory_per_cpu=0,
-                 days=0, hours=24, minutes=0, seconds=0,
+    def __init__(self, exp_name, python_file, n_exp, n_cores=1, memory=2000, days=0, hours=24, minutes=0, seconds=0,
                  project_name=None, base_dir=None, n_jobs=-1, conda_env=None, gres=None, begin=None,
-                 use_timestamp=False):
+                 use_timestamp=False, use_underscore=False):
         """
         Constructor.
 
@@ -24,7 +23,6 @@ class Launcher(object):
             n_exp (int): number of experiments
             n_cores (int): number of cpu cores
             memory (int): maximum memory (slurm will kill the job if this is reached)
-            memory_per_cpu (int): maximum memory per core (slurm will kill the job if this is reached)
             days (int): number of days the experiment can last (in slurm)
             hours (int): number of hours the experiment can last (in slurm)
             minutes (int): number of minutes the experiment can last (in slurm)
@@ -37,15 +35,14 @@ class Launcher(object):
             gres (str): request cluster resources. E.g. to add a GPU in the IAS cluster specify gres='gpu:rtx2080:1'
             begin (str): start the slurm experiment at a given time (see --begin in slurm docs)
             use_timestamp (bool): add a timestamp to the experiment name
+            use_underscore (bool): whether to use underscore '_' in argparse instead of dash '-'
 
         """
         self._exp_name = exp_name
         self._python_file = python_file
         self._n_exp = n_exp
         self._n_cores = n_cores
-        self._memory_default = 1000
         self._memory = memory
-        self._memory_per_cpu = memory_per_cpu
         self._duration = Launcher._to_duration(days, hours, minutes, seconds)
         self._project_name = project_name
         self._n_jobs = n_jobs
@@ -67,6 +64,8 @@ class Launcher(object):
 
         if use_timestamp:
             self._exp_name += datetime.datetime.now().strftime('_%Y-%m-%d_%H-%M-%S')
+
+        self._use_underscore = use_underscore
 
     def add_experiment(self, **kwargs):
         self._experiment_list.append(kwargs)
@@ -100,12 +99,7 @@ class Launcher(object):
 #SBATCH -n 1
 """
         code += '#SBATCH -c ' + str(self._n_cores) + '\n'
-        if self._memory:
-            code += '#SBATCH --mem=' + str(self._memory) + '\n'
-        elif self._memory_per_cpu:
-            code += '#SBATCH --mem-per-cpu=' + str(self._memory_per_cpu) + '\n'
-        else:
-            code += '#SBATCH --mem=' + str(self._memory_default) + '\n'
+        code += '#SBATCH --mem-per-cpu=' + str(self._memory) + '\n'
         if self._gres:
             print(self._gres)
             code += '#SBATCH --gres=' + str(self._gres) + '\n'
@@ -132,8 +126,12 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
         code += """\
 \t\t${@:2} \\
 \t\t--seed $SLURM_ARRAY_TASK_ID \\
-\t\t--results-dir $1
 """
+        if self._use_underscore:
+            code += '\t\t--results_dir\\\n'
+        else:
+            code += '\t\t--results_dir\\\n'
+
         return code
 
     def save_slurm(self):
@@ -213,7 +211,10 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
     def _convert_to_command_line(exp):
         command_line = ''
         for key, value in exp.items():
-            new_command = '--' + key.replace('_', '-') + ' '
+            if self._use_underscore:
+                new_command = '--' + key + ' '
+            else:
+                new_command = '--' + key.replace('_', '-') + ' '
 
             if isinstance(value, bool):
                 new_command = new_command if value else ''

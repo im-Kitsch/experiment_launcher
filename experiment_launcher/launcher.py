@@ -1,4 +1,5 @@
 import os
+import numpy as np
 from joblib import Parallel, delayed
 import datetime
 from importlib import import_module
@@ -13,7 +14,7 @@ class Launcher(object):
 
     def __init__(self, exp_name, python_file, n_exp, n_cores=1, memory=2000, days=0, hours=24, minutes=0, seconds=0,
                  project_name=None, base_dir=None, n_jobs=-1, conda_env=None, gres=None, begin=None,
-                 use_timestamp=False, use_underscore_argparse=False):
+                 use_timestamp=False, use_underscore_argparse=False, max_seeds=10000):
         """
         Constructor.
 
@@ -36,6 +37,7 @@ class Launcher(object):
             begin (str): start the slurm experiment at a given time (see --begin in slurm docs)
             use_timestamp (bool): add a timestamp to the experiment name
             use_underscore_argparse (bool): whether to use underscore '_' in argparse instead of dash '-'
+            max_seeds (int): interval [1, max_seeds-1] of random seeds to sample from
 
         """
         self._exp_name = exp_name
@@ -66,6 +68,11 @@ class Launcher(object):
             self._exp_name += datetime.datetime.now().strftime('_%Y-%m-%d_%H-%M-%S')
 
         self._use_underscore_argparse = use_underscore_argparse
+
+        if n_exp >= max_seeds:
+            max_seeds = n_exp + 1
+            print(f"max_seeds must be larger than the number of experiments. Setting max_seeds to {max_seeds}")
+        self._max_seeds = max_seeds
 
     def add_experiment(self, **kwargs):
         self._experiment_list.append(kwargs)
@@ -200,9 +207,10 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
     def _generate_exp_params(self, params_dict):
         params_dict.update(self._default_params)
 
-        for exp, i in product(self._experiment_list, range(self._n_exp)):
+        seeds = np.random.choice(np.arange(1, self._max_seeds), size=self._n_exp, replace=False)
+        for exp, seed in product(self._experiment_list, seeds):
             params_dict.update(exp)
-            params_dict['seed'] = i
+            params_dict['seed'] = int(seed)
             params_dict['results_dir'] = self._generate_results_dir(self._exp_dir_local, exp)
 
             yield params_dict

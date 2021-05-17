@@ -16,7 +16,8 @@ if __name__ == '__main__':
                         minutes=59,
                         seconds=0,
                         n_jobs=1,
-                        conda_env='conda-env',
+                        partition='test24',
+                        #conda_env='conda-env',
                         gres='gpu:rtx2080:1' if use_cuda else None,
                         use_timestamp=True)
 

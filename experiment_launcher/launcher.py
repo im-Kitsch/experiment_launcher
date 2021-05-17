@@ -13,7 +13,7 @@ class Launcher(object):
     """
 
     def __init__(self, exp_name, python_file, n_exp, n_cores=1, memory=2000, days=0, hours=24, minutes=0, seconds=0,
-                 project_name=None, base_dir=None, n_jobs=-1, conda_env=None, gres=None, begin=None,
+                 project_name=None, base_dir=None, n_jobs=-1, conda_env=None, gres=None, partition=None, begin=None,
                  use_timestamp=False, use_underscore_argparse=False, randomize_seeds=False, max_seeds=10000):
         """
         Constructor.
@@ -34,6 +34,7 @@ class Launcher(object):
             n_jobs (int): number of parallel jobs in Joblib
             conda_env (str): name of the conda environment to run the experiments in
             gres (str): request cluster resources. E.g. to add a GPU in the IAS cluster specify gres='gpu:rtx2080:1'
+            partition (str): the partition to use in case of slurm execution. If None, no partition is specified.
             begin (str): start the slurm experiment at a given time (see --begin in slurm docs)
             use_timestamp (bool): add a timestamp to the experiment name
             use_underscore_argparse (bool): whether to use underscore '_' in argparse instead of dash '-'
@@ -51,6 +52,7 @@ class Launcher(object):
         self._n_jobs = n_jobs
         self._conda_env = conda_env
         self._gres = gres
+        self._partition = partition
         self._begin = begin
 
         self._experiment_list = list()
@@ -91,56 +93,67 @@ class Launcher(object):
         self._experiment_list = list()
 
     def generate_slurm(self):
-        code = """\
+        project_name_option = ''
+        partition_option = ''
+        begin_option = ''
+        gres_option = ''
+
+        if self._project_name:
+            project_name_option = '#SBATCH -A ' + self._project_name + '\n'
+        if self._partition:
+            partition_option += f'#SBATCH -p {self._partition}\n'
+        if self._begin:
+            begin_option += f'#SBATCH --begin={self._begin}\n'
+        if self._gres:
+            print(self._gres)
+            gres_option += '#SBATCH --gres=' + str(self._gres) + '\n'
+
+        execution_code = ''
+        if self._conda_env:
+            if os.path.exists('/home/{}/miniconda3'.format(os.getenv('USER'))):
+                execution_code += f'eval \"$(/home/{os.getenv("USER")}/miniconda3/bin/conda shell.bash hook)\"\n'
+            elif os.path.exists(f'/home/{os.getenv("USER")}/anaconda3'):
+                execution_code += f'eval \"$(/home/{os.getenv("USER")}/anaconda/bin/conda shell.bash hook)\"\n'
+            else:
+                raise Exception('You do not have a /home/USER/miniconda3 or /home/USER/anaconda3 directories')
+            execution_code += f'conda activate {self._conda_env}\n\n'
+            execution_code += f'python {self._python_file}.py \\'
+        else:
+            execution_code += f'python3  {self._python_file}.py \\'
+
+        if self._use_underscore_argparse:
+            result_dir_code = '\t\t--results_dir $1\n'
+        else:
+            result_dir_code = '\t\t--results-dir $1\n'
+
+        code = f"""\
 #!/usr/bin/env bash
 
 ###############################################################################
 # SLURM Configurations
-"""
-        if self._project_name:
-            code += '#SBATCH -A ' + self._project_name + '\n'
-        code += '#SBATCH -J ' + self._exp_name + '\n'
-        code += '#SBATCH -a 0-' + str(self._n_exp - 1) + '\n'
-        code += '#SBATCH -t ' + self._duration + '\n'
-        if self._begin:
-            code += '#SBATCH --begin=' + self._begin + '\n'
-        code += """\
+
+# Optional parameters
+{project_name_option}{partition_option}{begin_option}{gres_option}
+# Mandatory parameters
+#SBATCH -J {self._exp_name}
+#SBATCH -a 0-{self._n_exp - 1}
+#SBATCH -t {self._duration}
 #SBATCH -n 1
-"""
-        code += '#SBATCH -c ' + str(self._n_cores) + '\n'
-        code += '#SBATCH --mem-per-cpu=' + str(self._memory) + '\n'
-        if self._gres:
-            print(self._gres)
-            code += '#SBATCH --gres=' + str(self._gres) + '\n'
-        code += '#SBATCH -o ' + self._exp_dir_slurm + '/%A_%a-out.txt\n'
-        code += '#SBATCH -e ' + self._exp_dir_slurm + '/%A_%a-err.txt\n'
-        code += """\
+#SBATCH -c {self._n_cores}
+#SBATCH --mem-per-cpu={self._memory}
+#SBATCH -o {self._exp_dir_slurm}/%A_%a-out.txt
+#SBATCH -e {self._exp_dir_slurm}/%A_%a-err.txt
+
 ###############################################################################
 # Your PROGRAM call starts here
 echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
 
 # Program specific arguments
-"""
-        if self._conda_env:
-            if os.path.exists('/home/{}/miniconda3'.format(os.getenv('USER'))):
-                code += 'eval \"$(/home/{}/miniconda3/bin/conda shell.bash hook)\"\n'.format(os.getenv('USER'))
-            elif os.path.exists('/home/{}/anaconda3'.format(os.getenv('USER'))):
-                code += 'eval \"$(/home/{}/anaconda/bin/conda shell.bash hook)\"\n'.format(os.getenv('USER'))
-            else:
-                raise Exception('You do not have a /home/USER/miniconda3 or /home/USER/anaconda3 directories')
-            code += 'conda activate {}\n\n'.format(self._conda_env)
-            code += 'python ' + self._python_file + '.py \\\n'
-        else:
-            code += 'python3 ' + self._python_file + '.py \\\n'
-        code += """\
-\t\t${@:2} \\
+{execution_code}
+\t\t${{@:2}} \\
 \t\t--seed $SLURM_ARRAY_TASK_ID \\
+{result_dir_code}
 """
-        if self._use_underscore_argparse:
-            code += '\t\t--results_dir $1\\\n'
-        else:
-            code += '\t\t--results-dir $1\\\n'
-
         return code
 
     def save_slurm(self):

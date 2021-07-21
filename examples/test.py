@@ -1,8 +1,11 @@
-import os
 import argparse
+import os
+
+from experiment_launcher.launcher import get_default_params
 
 
-def experiment(a, b_c, boolean, seed, results_dir,  default):
+def experiment(a=1, b_c=1, boolean=True, default='dft',
+               seed=0, results_dir='/tmp'):
 
     filename = os.path.join(results_dir, 'log_' + str(seed) + '.txt')
     os.makedirs(results_dir, exist_ok=True)
@@ -23,17 +26,6 @@ def experiment(a, b_c, boolean, seed, results_dir,  default):
         file.write('default: ' + default + '\n')
 
 
-def default_params():
-    defaults = dict(
-        a=1,
-        b_c=2,
-        boolean=False,
-        default='a'
-    )
-
-    return defaults
-
-
 def parse_args():
     parser = argparse.ArgumentParser()
 
@@ -47,7 +39,7 @@ def parse_args():
     arg_default.add_argument('--seed', type=int)
     arg_default.add_argument('--results-dir', type=str)
 
-    parser.set_defaults(**default_params())
+    parser.set_defaults(**get_default_params(experiment))
     args = parser.parse_args()
     return vars(args)
 

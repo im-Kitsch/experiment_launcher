@@ -1,3 +1,4 @@
+import inspect
 import os
 import numpy as np
 from joblib import Parallel, delayed
@@ -203,10 +204,7 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
                 params = str(exp).replace('{', '(').replace('}', '').replace(': ', '=').replace('\'', '')
                 print('experiment' + params + default_params + 'seed=' + str(i) + ', results_dir=' + results_dir + ')')
         else:
-            if hasattr(module, 'default_params'):
-                params_dict = module.default_params()
-            else:
-                params_dict = dict()
+            params_dict = get_default_params(experiment)
 
             Parallel(n_jobs=self._n_jobs)(delayed(experiment)(**params)
                                           for params in self._generate_exp_params(params_dict))
@@ -260,5 +258,13 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
         return str(days) + '-' + h + ":" + m + ":" + s
 
 
+def get_default_params(func):
+    signature = inspect.signature(func)
+    defaults = {}
+    for k, v in signature.parameters.items():
+        if v.default is not inspect.Parameter.empty:
+            defaults[k] = v.default
+
+    return defaults
 
 

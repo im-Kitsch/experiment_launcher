@@ -1,7 +1,7 @@
 import argparse
 import os
 
-from experiment_launcher.launcher import get_default_params
+from experiment_launcher import get_default_params
 
 
 def experiment(a=1, b_c=1, boolean=True, default='dft',

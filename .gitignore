@@ -3,5 +3,5 @@ dist/
 *.swp
 __pycache__/
 logs/
-experiments_launcher.egg-info/
+*.egg-info/
 

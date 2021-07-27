@@ -15,7 +15,7 @@ long_description = 'experiment_launcher is a Python library used to run experime
                    ' Supports Joblib and slurm jobs.'
 
 setup(
-    name='experiments_launcher',
+    name='experiment-launcher',
     version=__version__,
     description='A Python toolkit for launching experiments.',
     long_description=long_description,

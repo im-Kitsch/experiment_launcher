@@ -1,25 +1,35 @@
+import os
 from itertools import product
 from experiment_launcher import Launcher
 
+
 if __name__ == '__main__':
-    local = True
-    test = False
-    use_cuda = True
+    LOCAL = True
+    TEST = False
+    USE_CUDA = True
+
+    # JOBLIB_PARALLEL_JOBS = os.cpu_count()
+    JOBLIB_PARALLEL_JOBS = 5
+    N_SEEDS = 13
 
     launcher = Launcher(exp_name='test_launcher',
                         python_file='test',
-                        project_name='project01234',
-                        n_exp=2,
-                        memory=0,
+                        # project_name='project01234',
+                        n_exp=N_SEEDS,
+                        joblib_n_jobs=JOBLIB_PARALLEL_JOBS,
+                        n_cores=JOBLIB_PARALLEL_JOBS * 1,
+                        memory=JOBLIB_PARALLEL_JOBS * 1000,
                         days=1,
                         hours=23,
                         minutes=59,
                         seconds=0,
-                        n_jobs=1,
-                        partition='test24',
-                        #conda_env='conda-env',
-                        gres='gpu:rtx2080:1' if use_cuda else None,
-                        use_timestamp=True)
+                        # partition='test24',
+                        # conda_env='conda-env',
+                        gres='gpu:rtx2080:1' if USE_CUDA else None,
+                        use_timestamp=True,
+                        use_underscore_argparse=False,
+                        randomize_seeds=False
+                        )
 
     a_list = [1, 2, 3]
     b_c_list = [11, 12]
@@ -32,4 +42,4 @@ if __name__ == '__main__':
                                 b_c=b_c,
                                 boolean=boolean)
 
-    launcher.run(local, test)
+    launcher.run(LOCAL, TEST)

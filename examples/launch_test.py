@@ -4,9 +4,9 @@ from experiment_launcher import Launcher
 
 
 if __name__ == '__main__':
-    LOCAL = True
-    TEST = False
-    USE_CUDA = True
+    LOCAL = False
+    TEST = True
+    USE_CUDA = False
 
     # JOBLIB_PARALLEL_JOBS = os.cpu_count()
     JOBLIB_PARALLEL_JOBS = 5

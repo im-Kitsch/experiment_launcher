@@ -145,15 +145,15 @@ fi
         else:
             result_dir_code = '\t\t--results-dir $1'
 
-        joblib_code = f'\t\t--joblib-n-jobs $3 \\ \n'
+        joblib_code = f'\t\t--joblib-n-jobs $3  '
         N_EXPS = self._n_exp
         N_JOBS = self._joblib_n_jobs
         if N_EXPS < N_JOBS:
-            joblib_code += f'\t\t--joblib-n-seeds $2 \n'
+            joblib_code += f'--joblib-n-seeds $2 \n'
         elif N_EXPS % N_JOBS == 0:
-            joblib_code += f'\t\t--joblib-n-seeds $3 \n'
+            joblib_code += f'--joblib-n-seeds $3 \n'
         elif N_EXPS % N_JOBS != 0:
-            joblib_code += '\t\t--joblib-n-seeds ${JOBLIB_SEEDS} \n'
+            joblib_code += '--joblib-n-seeds ${JOBLIB_SEEDS} \n'
         else:
             raise NotImplementedError
 
@@ -183,7 +183,7 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
 {joblib_seed}
 # Program specific arguments
 {execution_code}
-\t\t${{@:2}} \\
+\t\t${{@:4}} \\
 \t\t--seed $SLURM_ARRAY_TASK_ID \\
 {result_dir_code} \\
 {joblib_code}

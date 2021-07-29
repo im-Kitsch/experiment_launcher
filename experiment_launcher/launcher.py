@@ -318,6 +318,7 @@ def run_experiment(func, args):
         seeds = np.arange(initial_seed, joblib_n_seeds, dtype=int)
         for seed in seeds:
             params_dict['seed'] = int(seed)
+            params_dict['results_dir'] = os.path.join(params_dict['results_dir'], str(seed))
             yield params_dict
 
     Parallel(n_jobs=joblib_n_jobs)(delayed(func)(**params)

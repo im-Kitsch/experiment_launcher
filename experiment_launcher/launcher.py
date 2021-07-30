@@ -316,9 +316,11 @@ def run_experiment(func, args):
 
     def generate_joblib_seeds(params_dict):
         seeds = np.arange(initial_seed, joblib_n_seeds, dtype=int)
+        results_dir = copy(params_dict['results_dir'])
         for seed in seeds:
             params_dict['seed'] = int(seed)
-            params_dict['results_dir'] = os.path.join(params_dict['results_dir'], str(seed))
+            params_dict['results_dir'] = os.path.join(results_dir, str(seed))
+            print(params_dict)
             yield params_dict
 
     Parallel(n_jobs=joblib_n_jobs)(delayed(func)(**params)

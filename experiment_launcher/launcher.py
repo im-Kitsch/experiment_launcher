@@ -316,7 +316,7 @@ def run_experiment(func, args):
     del args['joblib_n_seeds']
 
     def generate_joblib_seeds(params_dict):
-        seeds = np.arange(initial_seed, joblib_n_seeds, dtype=int)
+        seeds = np.arange(initial_seed, initial_seed + joblib_n_seeds, dtype=int)
         results_dir = copy(params_dict['results_dir'])
         for seed in seeds:
             params_dict['seed'] = int(seed)

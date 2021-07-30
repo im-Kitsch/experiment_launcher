@@ -27,8 +27,7 @@ if __name__ == '__main__':
                         # conda_env='base',
                         gres='gpu:rtx2080:1' if USE_CUDA else None,
                         use_timestamp=True,
-                        use_underscore_argparse=False,
-                        randomize_seeds=False
+                        use_underscore_argparse=False
                         )
 
     a_list = [1, 2, 3]

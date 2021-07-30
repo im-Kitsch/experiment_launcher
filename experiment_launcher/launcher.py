@@ -20,7 +20,7 @@ class Launcher(object):
     def __init__(self, exp_name, python_file, n_exp, n_cores=1, memory=2000,
                  days=0, hours=24, minutes=0, seconds=0,
                  project_name=None, base_dir=None, joblib_n_jobs=None, conda_env=None, gres=None, partition=None, begin=None,
-                 use_timestamp=False, use_underscore_argparse=False, randomize_seeds=False, max_seeds=10000):
+                 use_timestamp=False, use_underscore_argparse=False, max_seeds=10000):
         """
         Constructor.
 
@@ -44,7 +44,6 @@ class Launcher(object):
             begin (str): start the slurm experiment at a given time (see --begin in slurm docs)
             use_timestamp (bool): add a timestamp to the experiment name
             use_underscore_argparse (bool): whether to use underscore '_' in argparse instead of dash '-'
-            randomize_seeds (bool): whether to randomize random seeds
             max_seeds (int): interval [1, max_seeds-1] of random seeds to sample from
 
         """
@@ -85,7 +84,6 @@ class Launcher(object):
             max_seeds = n_exp + 1
             print(f"max_seeds must be larger than the number of experiments. Setting max_seeds to {max_seeds}")
         self._max_seeds = max_seeds
-        self._randomize_seeds = randomize_seeds
 
     def add_experiment(self, **kwargs):
         self._experiment_list.append(kwargs)
@@ -259,10 +257,7 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
     def _generate_exp_params(self, params_dict):
         params_dict.update(self._default_params)
 
-        if self._randomize_seeds:
-            seeds = np.random.choice(np.arange(1, self._max_seeds), size=self._n_exp, replace=False)
-        else:
-            seeds = np.arange(self._n_exp)
+        seeds = np.arange(self._n_exp)
         for exp, seed in product(self._experiment_list, seeds):
             params_dict.update(exp)
             params_dict['seed'] = int(seed)

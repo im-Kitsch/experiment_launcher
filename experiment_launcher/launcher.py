@@ -311,7 +311,6 @@ def run_experiment(func, args):
     joblib_n_jobs = copy(args['joblib_n_jobs'])
     joblib_n_seeds = copy(args['joblib_n_seeds'])
     initial_seed = copy(args['seed']) * joblib_n_jobs
-    print(initial_seed)
     del args['joblib_n_jobs']
     del args['joblib_n_seeds']
 

@@ -4,12 +4,12 @@ from experiment_launcher import Launcher
 
 
 if __name__ == '__main__':
-    LOCAL = True
+    LOCAL = False
     TEST = False
     USE_CUDA = False
 
-    JOBLIB_PARALLEL_JOBS = os.cpu_count()
-    # JOBLIB_PARALLEL_JOBS = 2
+    # JOBLIB_PARALLEL_JOBS = os.cpu_count()
+    JOBLIB_PARALLEL_JOBS = 5
     N_SEEDS = 13
 
     launcher = Launcher(exp_name='test_launcher',

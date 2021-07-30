@@ -320,7 +320,6 @@ def run_experiment(func, args):
         for seed in seeds:
             params_dict['seed'] = int(seed)
             params_dict['results_dir'] = os.path.join(results_dir, str(seed))
-            print(params_dict)
             yield params_dict
 
     Parallel(n_jobs=joblib_n_jobs)(delayed(func)(**params)

@@ -10,8 +10,9 @@ def experiment(a=1,
                b_c=1,
                boolean=True,
                default='dft',
-               seed=0,
-               results_dir='/tmp'):
+               seed=0,  # TODO: do not change this argument
+               results_dir='/tmp'  # TODO: do not change this argument
+               ):
 
     ####################################################################################################################
     # SETUP
@@ -54,7 +55,6 @@ def parse_args():
 
     # TODO: Leave unchanged
     parser = add_launcher_base_args(parser)
-
     parser.set_defaults(**get_default_params(experiment))
     args = parser.parse_args()
     return vars(args)

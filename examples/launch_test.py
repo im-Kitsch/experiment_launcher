@@ -15,7 +15,7 @@ if __name__ == '__main__':
     launcher = Launcher(exp_name='test_launcher',
                         python_file='test',
                         # project_name='project01234',
-                        n_exp=N_SEEDS,
+                        n_exps=N_SEEDS,
                         joblib_n_jobs=JOBLIB_PARALLEL_JOBS,
                         n_cores=JOBLIB_PARALLEL_JOBS * 1,
                         memory=JOBLIB_PARALLEL_JOBS * 1000,

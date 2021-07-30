@@ -17,7 +17,7 @@ class Launcher(object):
 
     """
 
-    def __init__(self, exp_name, python_file, n_exp, n_cores=1, memory=2000,
+    def __init__(self, exp_name, python_file, n_exps, n_cores=1, memory=2000,
                  days=0, hours=24, minutes=0, seconds=0,
                  project_name=None, base_dir=None, joblib_n_jobs=None, conda_env=None, gres=None, partition=None, begin=None,
                  use_timestamp=False, use_underscore_argparse=False, max_seeds=10000):
@@ -27,7 +27,7 @@ class Launcher(object):
         Args:
             exp_name (str): name of the experiment
             python_file (str): prefix of the python file that runs a single experiment
-            n_exp (int): number of experiments
+            n_exps (int): number of experiments
             n_cores (int): number of cpu cores
             memory (int): maximum memory (slurm will kill the job if this is reached)
             days (int): number of days the experiment can last (in slurm)
@@ -49,7 +49,7 @@ class Launcher(object):
         """
         self._exp_name = exp_name
         self._python_file = python_file
-        self._n_exp = n_exp
+        self._n_exps = n_exps
         self._n_cores = n_cores
         self._memory = memory
         self._duration = Launcher._to_duration(days, hours, minutes, seconds)
@@ -80,8 +80,8 @@ class Launcher(object):
 
         self._use_underscore_argparse = use_underscore_argparse
 
-        if n_exp >= max_seeds:
-            max_seeds = n_exp + 1
+        if n_exps >= max_seeds:
+            max_seeds = n_exps + 1
             print(f"max_seeds must be larger than the number of experiments. Setting max_seeds to {max_seeds}")
         self._max_seeds = max_seeds
 
@@ -144,7 +144,7 @@ fi
             result_dir_code = '\t\t--results-dir $1'
 
         joblib_code = f'\t\t--joblib-n-jobs $3  '
-        N_EXPS = self._n_exp
+        N_EXPS = self._n_exps
         N_JOBS = self._joblib_n_jobs
         if N_EXPS < N_JOBS:
             joblib_code += f'--joblib-n-seeds $2 \n'
@@ -165,7 +165,7 @@ fi
 {project_name_option}{partition_option}{begin_option}{gres_option}
 # Mandatory parameters
 #SBATCH -J {self._exp_name}
-#SBATCH -a 0-{self._n_exp - 1 if self._joblib_n_jobs is None else self._n_exp // self._joblib_n_jobs}
+#SBATCH -a 0-{self._n_exps - 1 if self._joblib_n_jobs is None else self._n_exps // self._joblib_n_jobs}
 #SBATCH -t {self._duration}
 #SBATCH -n 1
 #SBATCH -c {self._n_cores}
@@ -211,7 +211,7 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
                                                                         self._use_underscore_argparse)
             results_dir = self._generate_results_dir(self._exp_dir_slurm, exp)
             command = "sbatch " + full_path + ' ' + results_dir + ' ' + \
-                      str(self._n_exp) + ' ' + str(self._joblib_n_jobs) + \
+                      str(self._n_exps) + ' ' + str(self._joblib_n_jobs) + \
                       ' ' + command_line_arguments
 
             if test:
@@ -233,7 +233,7 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
             else:
                 default_params = ''
 
-            for exp, i in product(self._experiment_list, range(self._n_exp)):
+            for exp, i in product(self._experiment_list, range(self._n_exps)):
                 results_dir = self._generate_results_dir(self._exp_dir_local, exp)
                 params = str(exp).replace('{', '(').replace('}', '').replace(': ', '=').replace('\'', '')
                 print('experiment' + params + default_params + 'seed=' + str(i) + ', results_dir=' + results_dir + ')')
@@ -257,7 +257,7 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
     def _generate_exp_params(self, params_dict):
         params_dict.update(self._default_params)
 
-        seeds = np.arange(self._n_exp)
+        seeds = np.arange(self._n_exps)
         for exp, seed in product(self._experiment_list, seeds):
             params_dict.update(exp)
             params_dict['seed'] = int(seed)

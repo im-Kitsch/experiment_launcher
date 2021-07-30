@@ -24,7 +24,7 @@ if __name__ == '__main__':
                         minutes=2,
                         seconds=0,
                         partition='test30m',
-                        conda_env='base',
+                        # conda_env='base',
                         gres='gpu:rtx2080:1' if USE_CUDA else None,
                         use_timestamp=True,
                         use_underscore_argparse=False,

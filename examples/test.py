@@ -23,7 +23,6 @@ def experiment(a=1,
 
     ####################################################################################################################
     # EXPERIMENT
-    time.sleep(1)
     filename = os.path.join(results_dir, 'log_' + str(seed) + '.txt')
     os.makedirs(results_dir, exist_ok=True)
     print('Running experiment with seed', str(seed),

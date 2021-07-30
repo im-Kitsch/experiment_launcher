@@ -9,7 +9,7 @@ if __name__ == '__main__':
     USE_CUDA = False
 
     # JOBLIB_PARALLEL_JOBS = os.cpu_count()
-    JOBLIB_PARALLEL_JOBS = 5
+    JOBLIB_PARALLEL_JOBS = 16
     N_SEEDS = 13
 
     launcher = Launcher(exp_name='test_launcher',

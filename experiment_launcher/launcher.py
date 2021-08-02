@@ -56,8 +56,6 @@ class Launcher(object):
         self._project_name = project_name
         assert (joblib_n_jobs is None or joblib_n_jobs > 0), "joblib_n_jobs must be None or > 0"
         self._joblib_n_jobs = joblib_n_jobs
-        if joblib_n_jobs is None:
-            self._joblib_n_jobs = 1
         self._conda_env = conda_env
         self._gres = gres
         self._partition = partition
@@ -115,7 +113,10 @@ class Launcher(object):
             print(self._gres)
             gres_option += '#SBATCH --gres=' + str(self._gres) + '\n'
 
-        joblib_seed = f"""\
+        joblib_seed = ''
+        if self._joblib_n_jobs is not None:
+            joblib_seed = f"""\
+# Joblib seed
 aux=$(( $SLURM_ARRAY_TASK_ID + 1 ))
 aux=$(( $aux * $3 ))
 if (( $aux <= $2 ))
@@ -138,22 +139,29 @@ fi
         else:
             execution_code += f'python3  {self._python_file}.py \\'
 
+        if self._joblib_n_jobs is not None:
+            experiment_args = '\t\t${{@:4}} \\'
+        else:
+            experiment_args = '\t\t${{@:2}} \\'
+
         if self._use_underscore_argparse:
             result_dir_code = '\t\t--results_dir $1'
         else:
             result_dir_code = '\t\t--results-dir $1'
 
-        joblib_code = f'\t\t--joblib-n-jobs $3  '
-        N_EXPS = self._n_exps
-        N_JOBS = self._joblib_n_jobs
-        if N_EXPS < N_JOBS:
-            joblib_code += f'--joblib-n-seeds $2 \n'
-        elif N_EXPS % N_JOBS == 0:
-            joblib_code += f'--joblib-n-seeds $3 \n'
-        elif N_EXPS % N_JOBS != 0:
-            joblib_code += '--joblib-n-seeds ${JOBLIB_SEEDS} \n'
-        else:
-            raise NotImplementedError
+        joblib_code = ''
+        if self._joblib_n_jobs is not None:
+            joblib_code = f'\\\\\n\t\t--joblib-n-jobs $3  '
+            N_EXPS = self._n_exps
+            N_JOBS = self._joblib_n_jobs
+            if N_EXPS < N_JOBS:
+                joblib_code += f'--joblib-n-seeds $2 \n'
+            elif N_EXPS % N_JOBS == 0:
+                joblib_code += f'--joblib-n-seeds $3 \n'
+            elif N_EXPS % N_JOBS != 0:
+                joblib_code += '--joblib-n-seeds ${JOBLIB_SEEDS} \n'
+            else:
+                raise NotImplementedError
 
         code = f"""\
 #!/usr/bin/env bash
@@ -177,14 +185,12 @@ fi
 # Your PROGRAM call starts here
 echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
 
-# Joblib seed
 {joblib_seed}
 # Program specific arguments
 {execution_code}
-\t\t${{@:4}} \\
+{experiment_args}
 \t\t--seed $SLURM_ARRAY_TASK_ID \\
-{result_dir_code} \\
-{joblib_code}
+{result_dir_code} {joblib_code}
 """
         return code
 
@@ -244,13 +250,10 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
                                                  for params in self._generate_exp_params(params_dict))
 
     @staticmethod
-    def _generate_results_dir(results_dir, exp, seed=None):
+    def _generate_results_dir(results_dir, exp):
         for key, value in exp.items():
             subfolder = key + '_' + str(value)
             results_dir = os.path.join(results_dir, subfolder)
-
-        if seed is not None:
-            results_dir = os.path.join(results_dir, str(seed))
 
         return results_dir
 
@@ -261,7 +264,7 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
         for exp, seed in product(self._experiment_list, seeds):
             params_dict.update(exp)
             params_dict['seed'] = int(seed)
-            params_dict['results_dir'] = self._generate_results_dir(self._exp_dir_local, exp, seed)
+            params_dict['results_dir'] = self._generate_results_dir(self._exp_dir_local, exp)
 
             yield params_dict
 
@@ -311,10 +314,8 @@ def run_experiment(func, args):
 
     def generate_joblib_seeds(params_dict):
         seeds = np.arange(initial_seed, initial_seed + joblib_n_seeds, dtype=int)
-        results_dir = copy(params_dict['results_dir'])
         for seed in seeds:
             params_dict['seed'] = int(seed)
-            params_dict['results_dir'] = os.path.join(results_dir, str(seed))
             yield params_dict
 
     Parallel(n_jobs=joblib_n_jobs)(delayed(func)(**params)

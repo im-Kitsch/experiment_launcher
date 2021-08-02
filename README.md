@@ -37,7 +37,7 @@ You can do a minimal installation of ``experiment_launcher`` with:
 
 - Create a launcher file as in [launch_test.py](examples/launch_test.py) 
   - TODO
-  - If `joblib_n_jobs` is `None`, it will be set to `1` and behave as if only one job of the JobArray is running
+  - If `joblib_n_jobs` is `None`, ASDASDASDASDAS 
   - If `joblib_n_jobs` is `3`, then `3` jobs will run in parallel, even if the `n_cores` is `1`.
     For better performance, one should specify `n_cores >= joblib_n_jobs * 1`
 

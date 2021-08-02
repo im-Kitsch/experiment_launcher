@@ -10,14 +10,14 @@ def experiment(a=1,
                b_c=1,
                boolean=True,
                default='dft',
-               seed=0,  # TODO: do not change this argument
-               results_dir='/tmp'  # TODO: do not change this argument
+               seed=0,  # This argument is mandatory
+               results_dir='/tmp'  # This argument is mandatory
                ):
 
     ####################################################################################################################
     # SETUP
-    # TODO: Leave unchanged
     # Create results directory
+    results_dir = os.path.join(results_dir, str(seed))
     os.makedirs(results_dir, exist_ok=True)
     # Save arguments
     save_args(results_dir, locals(), git_repo_path='./')
@@ -53,7 +53,7 @@ def parse_args():
     arg_test.add_argument("--boolean", action='store_true')
     arg_test.add_argument('--default', type=str)
 
-    # TODO: Leave unchanged
+    # Leave unchanged
     parser = add_launcher_base_args(parser)
     parser.set_defaults(**get_default_params(experiment))
     args = parser.parse_args()
@@ -61,6 +61,6 @@ def parse_args():
 
 
 if __name__ == '__main__':
-    # TODO: Leave unchanged
+    # Leave unchanged
     args = parse_args()
     run_experiment(experiment, args)

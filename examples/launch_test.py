@@ -5,7 +5,7 @@ from experiment_launcher import Launcher
 
 if __name__ == '__main__':
     LOCAL = False
-    TEST = False
+    TEST = True
     USE_CUDA = False
 
     # JOBLIB_PARALLEL_JOBS = os.cpu_count()
@@ -16,9 +16,15 @@ if __name__ == '__main__':
                         python_file='test',
                         # project_name='project01234',
                         n_exps=N_SEEDS,
-                        joblib_n_jobs=JOBLIB_PARALLEL_JOBS,
+
+                        # joblib_n_jobs=JOBLIB_PARALLEL_JOBS,
+                        # n_cores=JOBLIB_PARALLEL_JOBS * 1,
+                        # memory=JOBLIB_PARALLEL_JOBS * 1000,
+
+                        joblib_n_jobs=None,
                         n_cores=JOBLIB_PARALLEL_JOBS * 1,
                         memory=JOBLIB_PARALLEL_JOBS * 1000,
+
                         days=0,
                         hours=0,
                         minutes=2,

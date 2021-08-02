@@ -8,23 +8,16 @@ if __name__ == '__main__':
     TEST = False
     USE_CUDA = False
 
-    # JOBLIB_PARALLEL_JOBS = os.cpu_count()
-    JOBLIB_PARALLEL_JOBS = 5
+    JOBLIB_PARALLEL_JOBS = 5  # or os.cpu_count() to use all cores
     N_SEEDS = 13
 
     launcher = Launcher(exp_name='test_launcher',
                         python_file='test',
                         # project_name='project01234',
                         n_exps=N_SEEDS,
-
-                        # joblib_n_jobs=JOBLIB_PARALLEL_JOBS,
-                        # n_cores=JOBLIB_PARALLEL_JOBS * 1,
-                        # memory=JOBLIB_PARALLEL_JOBS * 1000,
-
-                        joblib_n_jobs=None,
+                        joblib_n_jobs=JOBLIB_PARALLEL_JOBS,
                         n_cores=JOBLIB_PARALLEL_JOBS * 1,
                         memory=JOBLIB_PARALLEL_JOBS * 1000,
-
                         days=0,
                         hours=0,
                         minutes=2,

@@ -338,12 +338,14 @@ def add_launcher_base_args(parser):
     return parser
 
 
-def save_args(results_dir, args, git_repo_path=None):
+def save_args(results_dir, args, git_repo_path=None, seed=None):
     repo = git.Repo(git_repo_path, search_parent_directories=True)
     args['git_hash'] = repo.head.object.hexsha
     args['git_url'] = repo.remotes.origin.url
+
+    filename = 'args.json' if seed is None else f'args-{seed}.json'
     # Save args
-    with open(os.path.join(results_dir, 'args.json'), 'w') as f:
+    with open(os.path.join(results_dir, filename), 'w') as f:
         json.dump(args, f, indent=2)
 
     del args['git_hash']

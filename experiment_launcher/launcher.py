@@ -312,12 +312,15 @@ def get_default_params(func):
 def run_experiment(func, args):
     joblib_n_jobs = copy(args['joblib_n_jobs'])
     joblib_n_seeds = copy(args['joblib_n_seeds'])
-    initial_seed = copy(args['seed']) * joblib_n_jobs
+    initial_seed = copy(args['seed'])
+    if joblib_n_jobs is not None:
+        initial_seed *= joblib_n_jobs
     del args['joblib_n_jobs']
     del args['joblib_n_seeds']
 
     def generate_joblib_seeds(params_dict):
-        seeds = np.arange(initial_seed, initial_seed + joblib_n_seeds, dtype=int)
+        final_seed = initial_seed + 1 if joblib_n_seeds is None else joblib_n_seeds
+        seeds = np.arange(initial_seed, final_seed, dtype=int)
         for seed in seeds:
             params_dict['seed'] = int(seed)
             yield params_dict

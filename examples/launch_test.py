@@ -9,13 +9,13 @@ if __name__ == '__main__':
     USE_CUDA = False
 
     JOBLIB_PARALLEL_JOBS = 5  # or os.cpu_count() to use all cores
-    N_SEEDS = 2
+    N_SEEDS = 12
 
     launcher = Launcher(exp_name='test_launcher',
                         python_file='test',
                         # project_name='project01234',
                         n_exps=N_SEEDS,
-                        # joblib_n_jobs=JOBLIB_PARALLEL_JOBS,
+                        joblib_n_jobs=JOBLIB_PARALLEL_JOBS,
                         n_cores=JOBLIB_PARALLEL_JOBS * 1,
                         memory=JOBLIB_PARALLEL_JOBS * 1000,
                         days=0,
@@ -23,7 +23,7 @@ if __name__ == '__main__':
                         minutes=2,
                         seconds=0,
                         partition='test30m',
-                        conda_env='base',
+                        # conda_env='base',
                         gres='gpu:rtx2080:1' if USE_CUDA else None,
                         use_timestamp=True,
                         use_underscore_argparse=False

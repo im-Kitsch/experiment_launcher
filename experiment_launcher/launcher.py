@@ -269,7 +269,6 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
             params_dict.update(exp)
             params_dict['seed'] = int(seed)
             params_dict['results_dir'] = self._generate_results_dir(self._exp_dir_local, exp)
-
             yield params_dict
 
     @staticmethod

@@ -2,8 +2,7 @@ import argparse
 import os
 import time
 
-from experiment_launcher import get_default_params, run_experiment, add_launcher_base_args
-from experiment_launcher.launcher import save_args
+from experiment_launcher import get_default_params, run_experiment, add_launcher_base_args, save_args
 
 
 def experiment(a=1,

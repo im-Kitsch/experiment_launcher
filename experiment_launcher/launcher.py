@@ -139,10 +139,12 @@ fi
         else:
             execution_code += f'python3  {self._python_file}.py \\'
 
+        experiment_args = '\t\t'
         if self._joblib_n_jobs is not None:
-            experiment_args = '\t\t${{@:4}} \\'
+            experiment_args += r'${@:4}'
         else:
-            experiment_args = '\t\t${{@:2}} \\'
+            experiment_args += r'${@:2}'
+        experiment_args += ' \\'
 
         if self._use_underscore_argparse:
             result_dir_code = '\t\t--results_dir $1'
@@ -151,7 +153,7 @@ fi
 
         joblib_code = ''
         if self._joblib_n_jobs is not None:
-            joblib_code = f'\\\\\n\t\t--joblib-n-jobs $3  '
+            joblib_code = f'\\\n\t\t--joblib-n-jobs $3  '
             N_EXPS = self._n_exps
             N_JOBS = self._joblib_n_jobs
             if N_EXPS < N_JOBS:
@@ -216,9 +218,11 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
                 command_line_arguments += self._convert_to_command_line(self._default_params,
                                                                         self._use_underscore_argparse)
             results_dir = self._generate_results_dir(self._exp_dir_slurm, exp)
-            command = "sbatch " + full_path + ' ' + results_dir + ' ' + \
-                      str(self._n_exps) + ' ' + str(self._joblib_n_jobs) + \
-                      ' ' + command_line_arguments
+
+            command = "sbatch " + full_path + ' ' + results_dir 
+            if self._joblib_n_jobs is not None:
+                command += ' ' + str(self._n_exps) + ' ' + str(self._joblib_n_jobs) 
+            command += ' ' + command_line_arguments
 
             if test:
                 print(command)

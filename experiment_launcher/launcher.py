@@ -20,8 +20,8 @@ class Launcher(object):
 
     def __init__(self, exp_name, python_file, n_exps, n_cores=1, memory=2000,
                  days=0, hours=24, minutes=0, seconds=0,
-                 project_name=None, base_dir=None, joblib_n_jobs=None, conda_env=None, gres=None, partition=None, begin=None,
-                 use_timestamp=False, use_underscore_argparse=False, max_seeds=10000):
+                 project_name=None, base_dir=None, joblib_n_jobs=None, conda_env=None, gres=None, partition=None,
+                 begin=None, use_timestamp=False, use_underscore_argparse=True, max_seeds=10000):
         """
         Constructor.
 

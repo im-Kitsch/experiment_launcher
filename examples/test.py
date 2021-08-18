@@ -43,5 +43,4 @@ def experiment(a: int = 1,
 
 if __name__ == '__main__':
     # Leave unchanged
-    args = parse_args(experiment)
-    run_experiment(experiment, args)
+    run_experiment(experiment)

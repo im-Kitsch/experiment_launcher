@@ -318,7 +318,8 @@ def parse_args(func):
     return vars(args)
 
 
-def run_experiment(func, args):
+def run_experiment(func):
+    args = parse_args(func)
     joblib_n_jobs = copy(args['joblib_n_jobs'])
     joblib_n_seeds = copy(args['joblib_n_seeds'])
     initial_seed = copy(args['seed'])

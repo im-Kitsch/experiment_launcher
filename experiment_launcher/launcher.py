@@ -281,10 +281,7 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
             else:
                 new_command = '--' + key.replace('_', '-') + ' '
 
-            if isinstance(value, bool):
-                new_command = new_command if value else ''
-            else:
-                new_command += str(value) + ' '
+            new_command += str(value) + ' '
 
             command_line += new_command
 

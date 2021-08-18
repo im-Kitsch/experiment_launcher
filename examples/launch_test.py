@@ -4,7 +4,7 @@ from experiment_launcher import Launcher
 
 
 if __name__ == '__main__':
-    LOCAL = False
+    LOCAL = True
     TEST = False
     USE_CUDA = False
 

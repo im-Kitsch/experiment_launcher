@@ -1,3 +1,4 @@
+import argparse
 import inspect
 import json
 import os
@@ -304,8 +305,30 @@ def get_default_params(func):
     for k, v in signature.parameters.items():
         if v.default is not inspect.Parameter.empty:
             defaults[k] = v.default
-
     return defaults
+
+
+def translate_exp_params_to_argparse(parser, func):
+    arg_experiments = parser.add_argument_group('Experiment')
+    signature = inspect.signature(func)
+    for k, v in signature.parameters.items():
+        if k not in ['seed', 'results_dir']:
+            if v.default is not inspect.Parameter.empty:
+                arg_experiments.add_argument(f"--{str(k)}")
+    return parser
+
+
+def parse_args(func):
+    parser = argparse.ArgumentParser()
+
+    # Place your experiment arguments here
+    parser = translate_exp_params_to_argparse(parser, func)
+
+    # Leave unchanged
+    parser = add_launcher_base_args(parser)
+    parser.set_defaults(**get_default_params(func))
+    args = parser.parse_args()
+    return vars(args)
 
 
 def run_experiment(func, args):

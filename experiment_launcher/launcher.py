@@ -148,15 +148,15 @@ fi
 
         joblib_code = ''
         if self._joblib_n_jobs is not None:
-            joblib_code = f'\\\n\t\t--joblib-n-jobs $3  '
+            joblib_code = f'\\\n\t\t--joblib_n_jobs $3  '
             N_EXPS = self._n_exps
             N_JOBS = self._joblib_n_jobs
             if N_EXPS < N_JOBS:
-                joblib_code += f'--joblib-n-seeds $2 \n'
+                joblib_code += f'--joblib_n_seeds $2 \n'
             elif N_EXPS % N_JOBS == 0:
-                joblib_code += f'--joblib-n-seeds $3 \n'
+                joblib_code += f'--joblib_n_seeds $3 \n'
             elif N_EXPS % N_JOBS != 0:
-                joblib_code += '--joblib-n-seeds ${JOBLIB_SEEDS} \n'
+                joblib_code += '--joblib_n_seeds ${JOBLIB_SEEDS} \n'
             else:
                 raise NotImplementedError
 
@@ -341,9 +341,9 @@ def run_experiment(func, args):
 def add_launcher_base_args(parser):
     arg_default = parser.add_argument_group('Default')
     arg_default.add_argument('--seed', type=int)
-    arg_default.add_argument('--results-dir', type=str)
-    arg_default.add_argument('--joblib-n-jobs', type=int)
-    arg_default.add_argument('--joblib-n-seeds', type=int)
+    arg_default.add_argument('--results_dir', type=str)
+    arg_default.add_argument('--joblib_n_jobs', type=int)
+    arg_default.add_argument('--joblib_n_seeds', type=int)
     return parser
 
 

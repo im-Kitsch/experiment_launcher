@@ -21,7 +21,7 @@ class Launcher(object):
     def __init__(self, exp_name, python_file, n_exps, n_cores=1, memory=2000,
                  days=0, hours=24, minutes=0, seconds=0,
                  project_name=None, base_dir=None, joblib_n_jobs=None, conda_env=None, gres=None, partition=None,
-                 begin=None, use_timestamp=False, use_underscore_argparse=True, max_seeds=10000):
+                 begin=None, use_timestamp=False, max_seeds=10000):
         """
         Constructor.
 
@@ -44,7 +44,6 @@ class Launcher(object):
             partition (str): the partition to use in case of slurm execution. If None, no partition is specified.
             begin (str): start the slurm experiment at a given time (see --begin in slurm docs)
             use_timestamp (bool): add a timestamp to the experiment name
-            use_underscore_argparse (bool): whether to use underscore '_' in argparse instead of dash '-'
             max_seeds (int): interval [1, max_seeds-1] of random seeds to sample from
 
         """
@@ -76,8 +75,6 @@ class Launcher(object):
             self._exp_dir_slurm = os.path.join(scratch_dir, self._exp_name)
         else:
             self._exp_dir_slurm = self._exp_dir_local
-
-        self._use_underscore_argparse = use_underscore_argparse
 
         if n_exps >= max_seeds:
             max_seeds = n_exps + 1
@@ -147,10 +144,7 @@ fi
             experiment_args += r'${@:2}'
         experiment_args += ' \\'
 
-        if self._use_underscore_argparse:
-            result_dir_code = '\t\t--results_dir $1'
-        else:
-            result_dir_code = '\t\t--results-dir $1'
+        result_dir_code = '\t\t--results_dir $1'
 
         joblib_code = ''
         if self._joblib_n_jobs is not None:
@@ -213,11 +207,10 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
         full_path = self.save_slurm()
 
         for exp in self._experiment_list:
-            command_line_arguments = self._convert_to_command_line(exp, self._use_underscore_argparse)
+            command_line_arguments = self._convert_to_command_line(exp)
             if self._default_params:
                 command_line_arguments += ' '
-                command_line_arguments += self._convert_to_command_line(self._default_params,
-                                                                        self._use_underscore_argparse)
+                command_line_arguments += self._convert_to_command_line(self._default_params)
             results_dir = self._generate_results_dir(self._exp_dir_slurm, exp)
 
             command = "sbatch " + full_path + ' ' + results_dir 
@@ -273,13 +266,10 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
             yield params_dict
 
     @staticmethod
-    def _convert_to_command_line(exp, use_underscore_argparse):
+    def _convert_to_command_line(exp):
         command_line = ''
         for key, value in exp.items():
-            if use_underscore_argparse:
-                new_command = '--' + key + ' '
-            else:
-                new_command = '--' + key.replace('_', '-') + ' '
+            new_command = '--' + key + ' '
 
             new_command += str(value) + ' '
 

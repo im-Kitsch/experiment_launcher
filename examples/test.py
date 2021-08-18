@@ -3,6 +3,7 @@ import os
 from experiment_launcher import run_experiment, save_args, parse_args
 
 
+# This function MUST be named 'experiment'
 def experiment(a: int = 1,
                b_c: int = 1,
                boolean: bool = True,

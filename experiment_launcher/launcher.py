@@ -9,6 +9,7 @@ from joblib import Parallel, delayed
 import datetime
 from importlib import import_module
 from itertools import product
+import stat
 
 
 class Launcher(object):
@@ -135,9 +136,11 @@ fi
             else:
                 raise Exception('You do not have a /home/USER/miniconda3 or /home/USER/anaconda3 directories')
             execution_code += f'conda activate {self._conda_env}\n\n'
-            execution_code += f'python {self._python_file}.py \\'
+            # execution_code += f'python {self._python_file}.py \\'
+            execution_code += f'python {os.path.join(os.getcwd(), self._python_file)}.py \\'
         else:
-            execution_code += f'python3  {self._python_file}.py \\'
+            # execution_code += f'python3  {self._python_file}.py \\'
+            execution_code += f'python3 {os.path.join(os.getcwd(), self._python_file)}.py \\'
 
         experiment_args = '\t\t'
         if self._joblib_n_jobs is not None:
@@ -185,9 +188,13 @@ fi
 
 ###############################################################################
 # Your PROGRAM call starts here
-echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
+echo "Starting Job SLURM_JOB_ID $SLURM_JOB_ID, Index SLURM_ARRAY_TASK_ID $SLURM_ARRAY_TASK_ID"
+echo "SLURM_ARRAY_TASK_ID $SLURM_ARRAY_TASK_ID JOBLIB_SEEDS $JOBLIB_SEEDS"
 
-{joblib_seed}
+module list
+module load gcc git cuda openmpi 
+
+{joblib_seed} 
 # Program specific arguments
 {execution_code}
 {experiment_args}
@@ -211,6 +218,7 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
     def _run_slurm(self, test):
         full_path = self.save_slurm()
 
+        bash_file = open(os.path.join(os.path.dirname(full_path), 'command_list.sh'), 'w')
         for exp in self._experiment_list:
             command_line_arguments = self._convert_to_command_line(exp, self._use_underscore_argparse)
             if self._default_params:
@@ -219,15 +227,23 @@ echo "Starting Job $SLURM_JOB_ID, Index $SLURM_ARRAY_TASK_ID"
                                                                         self._use_underscore_argparse)
             results_dir = self._generate_results_dir(self._exp_dir_slurm, exp)
 
-            command = "sbatch " + full_path + ' ' + results_dir 
+            command = "sbatch " + full_path + ' ' + results_dir
             if self._joblib_n_jobs is not None:
-                command += ' ' + str(self._n_exps) + ' ' + str(self._joblib_n_jobs) 
+                command += ' ' + str(self._n_exps) + ' ' + str(self._joblib_n_jobs)
             command += ' ' + command_line_arguments
+
+            bash_file.write(command + '\n')
 
             if test:
                 print(command)
             else:
+                print(command)
                 os.system(command)
+
+        bash_file.close()
+        status = os.stat(bash_file.name)
+        os.chmod(bash_file.name, status.st_mode | stat.S_IEXEC)
+        return
 
     def _run_joblib(self, test):
         if not test:

@@ -8,16 +8,16 @@ if __name__ == '__main__':
     TEST = False
     USE_CUDA = False
 
-    JOBLIB_PARALLEL_JOBS = 5  # or os.cpu_count() to use all cores
-    N_SEEDS = 12
+    JOBLIB_PARALLEL_JOBS = None  # or os.cpu_count() to use all cores
+    N_SEEDS = 1
 
     launcher = Launcher(exp_name='test_launcher',
                         python_file='test',
                         # project_name='project01234',
                         n_exps=N_SEEDS,
                         joblib_n_jobs=JOBLIB_PARALLEL_JOBS,
-                        n_cores=JOBLIB_PARALLEL_JOBS * 1,
-                        memory=JOBLIB_PARALLEL_JOBS * 1000,
+                        n_cores=1 * 1,
+                        memory=1 * 1000,
                         days=0,
                         hours=0,
                         minutes=2,
@@ -29,9 +29,9 @@ if __name__ == '__main__':
                         use_underscore_argparse=False
                         )
 
-    a_list = [1, 2, 3]
-    b_c_list = [11, 12]
-    boolean_list = [True, False]
+    a_list = list(range(96))
+    b_c_list = [11]
+    boolean_list = [True]
 
     launcher.add_default_params(default='b')
 

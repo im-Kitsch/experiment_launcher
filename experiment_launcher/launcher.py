@@ -48,6 +48,8 @@ class Launcher(object):
             max_seeds (int): interval [1, max_seeds-1] of random seeds to sample from
 
         """
+        exp_name_original = exp_name
+
         self._exp_name = exp_name
         self._python_file = python_file
         self._n_exps = n_exps
@@ -73,7 +75,7 @@ class Launcher(object):
 
         scratch_dir = os.path.join('/work', 'scratch', os.getenv('USER'))
         if os.path.isdir(scratch_dir):
-            self._exp_dir_slurm = os.path.join(scratch_dir, self._exp_name)
+            self._exp_dir_slurm = os.path.join(scratch_dir, exp_name_original, self._exp_name)
         else:
             self._exp_dir_slurm = self._exp_dir_local
 
@@ -192,6 +194,7 @@ echo "Starting Job SLURM_JOB_ID $SLURM_JOB_ID, Index SLURM_ARRAY_TASK_ID $SLURM_
 echo "SLURM_ARRAY_TASK_ID $SLURM_ARRAY_TASK_ID JOBLIB_SEEDS $JOBLIB_SEEDS"
 
 module list
+module purge
 module load gcc git cuda openmpi 
 
 {joblib_seed} 

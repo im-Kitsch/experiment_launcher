@@ -29,7 +29,7 @@ if __name__ == '__main__':
                         use_underscore_argparse=False
                         )
 
-    a_list = list(range(96))
+    a_list = list(range(4))
     b_c_list = [11]
     boolean_list = [True]
 

@@ -29,8 +29,8 @@ if __name__ == '__main__':
                         use_underscore_argparse=False
                         )
 
-    a_list = list(range(4))
-    b_c_list = [11]
+    a_list = list(range(2))
+    b_c_list = [11, 12]
     boolean_list = [True]
 
     launcher.add_default_params(default='b')

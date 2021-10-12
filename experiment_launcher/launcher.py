@@ -194,8 +194,6 @@ echo "Starting Job SLURM_JOB_ID $SLURM_JOB_ID, Index SLURM_ARRAY_TASK_ID $SLURM_
 echo "SLURM_ARRAY_TASK_ID $SLURM_ARRAY_TASK_ID JOBLIB_SEEDS $JOBLIB_SEEDS"
 
 module list
-module purge
-module load gcc git cuda openmpi 
 
 {joblib_seed} 
 # Program specific arguments

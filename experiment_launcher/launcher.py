@@ -191,13 +191,13 @@ fi
 ###############################################################################
 # Your PROGRAM call starts here
 echo "Starting Job SLURM_JOB_ID $SLURM_JOB_ID, Index SLURM_ARRAY_TASK_ID $SLURM_ARRAY_TASK_ID"
-echo "SLURM_ARRAY_TASK_ID $SLURM_ARRAY_TASK_ID JOBLIB_SEEDS $JOBLIB_SEEDS"
+echo "Slurm Array Job ID $SLURM_ARRAY_JOB_ID , JOBLIB_SEEDS $JOBLIB_SEEDS"
 
 #  module list
 
 mkdir -p $1
-ln -s  {self._exp_dir_slurm}/"$SLURM_JOB_ID"_"$SLURM_ARRAY_TASK_ID".out  $1/"$SLURM_JOB_ID"_"$SLURM_ARRAY_TASK_ID".out 
-ln -s  {self._exp_dir_slurm}/"$SLURM_JOB_ID"_"$SLURM_ARRAY_TASK_ID".err  $1/"$SLURM_JOB_ID"_"$SLURM_ARRAY_TASK_ID".err   
+ln -s  {self._exp_dir_slurm}/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".out  $1/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".out 
+ln -s  {self._exp_dir_slurm}/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".err  $1/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".err   
 # not sure totally right
 
 {joblib_seed} 

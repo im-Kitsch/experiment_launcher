@@ -9,7 +9,7 @@ if __name__ == '__main__':
     USE_CUDA = False
 
     JOBLIB_PARALLEL_JOBS = None  # or os.cpu_count() to use all cores
-    N_SEEDS = 1
+    N_SEEDS = 3
 
     launcher = Launcher(exp_name='test_launcher',
                         python_file='test',

@@ -198,7 +198,7 @@ echo "Slurm Array Job ID $SLURM_ARRAY_JOB_ID , JOBLIB_SEEDS $JOBLIB_SEEDS"
 mkdir -p $1/$SLURM_ARRAY_TASK_ID
 ln -s  {self._exp_dir_slurm}/output_record/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".out  $1/$SLURM_ARRAY_TASK_ID/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".out 
 ln -s  {self._exp_dir_slurm}/output_record/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".err  $1/$SLURM_ARRAY_TASK_ID/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".err 
-ln -s  $1/$SLURM_ARRAY_TASK_ID/success_record.csv  {self._exp_dir_slurm}/success_record/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".out
+ln -s  $1/$SLURM_ARRAY_TASK_ID/success_record.csv  {self._exp_dir_slurm}/success_record/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".csv
 # not sure totally right
 
 {joblib_seed} 
@@ -386,7 +386,7 @@ def save_success(results_dir, args, if_success=False):
             f.write(k)
             f.write(', ')
             f.write(str(val))
-        f.write(', ')
+            f.write(', ')
 
         f.write('\n')
         f.write('\n')

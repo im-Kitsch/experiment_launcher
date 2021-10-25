@@ -381,7 +381,7 @@ def save_success(results_dir, args, if_success=False):
 
     filename = 'success_record.csv'
     with open(os.path.join(results_dir, filename), 'w') as f:
-        f.write('True, ' if if_success else 'False')
+        f.write('True, ' if if_success else 'False, ')
         for k, val in args.items():
             f.write(k)
             f.write(', ')

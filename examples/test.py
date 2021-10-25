@@ -2,27 +2,16 @@ import argparse
 import os
 import time
 
-from experiment_launcher import get_default_params, run_experiment, add_launcher_base_args, save_args
+from experiment_launcher import get_default_params, run_experiment, add_launcher_base_args, save_args, save_success
 
 
-def experiment(a=1,
-               b_c=1,
-               boolean=True,
-               default='dft',
-               seed=0,  # This argument is mandatory
-               results_dir='/tmp'  # This argument is mandatory
-               ):
-
-    ####################################################################################################################
-    # SETUP
-    # Create results directory
-    results_dir = os.path.join(results_dir, str(seed))
-    os.makedirs(results_dir, exist_ok=True)
-    # Save arguments
-    save_args(results_dir, locals(), git_repo_path='./')
-
-    ####################################################################################################################
-    # EXPERIMENT
+def train(a=1,
+          b_c=1,
+          boolean=True,
+          default='dft',
+          seed=0,  # This argument is mandatory
+          results_dir='/tmp'  # This argument is mandatory
+          ):
     filename = os.path.join(results_dir, 'log_' + str(seed) + '.txt')
     os.makedirs(results_dir, exist_ok=True)
     print('Running experiment with seed', str(seed),
@@ -40,7 +29,32 @@ def experiment(a=1,
         file.write('b-c: ' + str(b_c) + '\n')
         file.write('boolean: ' + str(boolean) + '\n')
         file.write('default: ' + default + '\n')
+    return
 
+
+def experiment(a=1,
+               b_c=1,
+               boolean=True,
+               default='dft',
+               seed=0,  # This argument is mandatory
+               results_dir='/tmp'  # This argument is mandatory
+               ):
+
+    ####################################################################################################################
+    # SETUP
+    # Create results directory
+    results_dir = os.path.join(results_dir, str(seed))
+    os.makedirs(results_dir, exist_ok=True)
+    # Save arguments
+    save_args(results_dir, locals(), git_repo_path='./')
+    save_success(results_dir, locals(), False)
+
+    ####################################################################################################################
+    # EXPERIMENT
+
+    train(a,  b_c, boolean,  default,  seed,  results_dir)
+
+    save_success(results_dir, locals(), True)
 
 def parse_args():
     parser = argparse.ArgumentParser()

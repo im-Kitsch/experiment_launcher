@@ -185,8 +185,8 @@ fi
 #SBATCH -n 1
 #SBATCH -c {self._n_cores}
 #SBATCH --mem-per-cpu={self._memory}
-#SBATCH -o {self._exp_dir_slurm}/%A_%a.out
-#SBATCH -e {self._exp_dir_slurm}/%A_%a.err
+#SBATCH -o {self._exp_dir_slurm}/output_record/%A_%a.out
+#SBATCH -e {self._exp_dir_slurm}/output_record/%A_%a.err
 
 ###############################################################################
 # Your PROGRAM call starts here
@@ -195,9 +195,10 @@ echo "Slurm Array Job ID $SLURM_ARRAY_JOB_ID , JOBLIB_SEEDS $JOBLIB_SEEDS"
 
 #  module list
 
-mkdir -p $1
-ln -s  {self._exp_dir_slurm}/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".out  $1/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".out 
-ln -s  {self._exp_dir_slurm}/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".err  $1/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".err   
+mkdir -p $1/$SLURM_ARRAY_TASK_ID
+ln -s  {self._exp_dir_slurm}/output_record/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".out  $1/$SLURM_ARRAY_TASK_ID/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".out 
+ln -s  {self._exp_dir_slurm}/output_record/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".out  $1/$SLURM_ARRAY_TASK_ID/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".out 
+ln -s  $1/$SLURM_ARRAY_TASK_ID/success_record.csv  {self._exp_dir_slurm}/success_record/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".out
 # not sure totally right
 
 {joblib_seed} 
@@ -214,6 +215,8 @@ ln -s  {self._exp_dir_slurm}/"$SLURM_ARRAY_JOB_ID"_"$SLURM_ARRAY_TASK_ID".err  $
         code = self.generate_slurm()
 
         os.makedirs(self._exp_dir_slurm, exist_ok=True)
+        os.makedirs(os.path.join(self._exp_dir_slurm, 'output_record'), exist_ok=True)
+        os.makedirs(os.path.join(self._exp_dir_slurm, 'success_record'), exist_ok=True)
         script_name = "slurm_" + self._exp_name + ".sh"
         full_path = os.path.join(self._exp_dir_slurm, script_name)
 
@@ -372,3 +375,21 @@ def save_args(results_dir, args, git_repo_path=None, seed=None):
 
     del args['git_hash']
     del args['git_url']
+
+
+def save_success(results_dir, args, if_success=False):
+
+    filename = 'success_record.csv'
+    with open(os.path.join(results_dir, filename), 'w') as f:
+        f.write('True, ' if if_success else 'False')
+        for k, val in args.items():
+            f.write(k)
+            f.write(', ')
+            f.write(str(val))
+        f.write(', ')
+
+        f.write('\n')
+        f.write('\n')
+
+    return
+
